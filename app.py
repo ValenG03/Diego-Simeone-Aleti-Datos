@@ -1,6 +1,9 @@
 """EL EFECTO CHOLO — Atlético de Madrid 2005/06–2025/26
 Rendimiento deportivo vs. recursos económicos. Stack: Streamlit · Pandas · Plotly · Seaborn · K-means
 """
+import base64
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -13,27 +16,59 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 st.set_page_config(page_title="El Efecto Cholo", page_icon="🔴", layout="wide")
-RED, DARK, BLACK, WHITE, GREY = "#CB3524", "#5C1610", "#0A0A0A", "#F5F5F5", "#7A7A7A"
+RED, DARK, BLACK, WHITE, GREY = "#E0402F", "#7A2018", "#14161C", "#F5F5F5", "#9BA0AB"
+CARD, TEXT = "#20232C", "#E6E8EC"
+ASSETS = Path(__file__).parent / "assets"
+
+@st.cache_data
+def b64(name):
+    p = ASSETS / name
+    mime = "png" if p.suffix == ".png" else "jpeg"
+    return f"data:image/{mime};base64,{base64.b64encode(p.read_bytes()).decode()}" if p.exists() else ""
 
 # ─────────────────────────── ESTILO ───────────────────────────
 st.markdown(f"""<style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap');
-.stApp {{background:radial-gradient(circle at 85% -10%,#3a0b07 0%,{BLACK} 42%);color:#cfcfcf;font-family:Inter,sans-serif}}
-[data-testid="stSidebar"] {{background:#070707;border-right:1px solid {DARK}}}
-h1,h2,h3 {{font-family:'Bebas Neue';letter-spacing:2px;color:{WHITE}!important}}
-.hero {{font-family:'Bebas Neue';font-size:clamp(3rem,8vw,6rem);line-height:.85;color:{WHITE};margin:0}}
-.hero span {{color:{RED};text-shadow:0 0 22px {RED}aa}}
-.sub {{color:{GREY};letter-spacing:3px;text-transform:uppercase;font-size:.8rem;margin-bottom:1.2rem}}
-[data-testid="stMetric"] {{background:#0f0f0f;border-left:4px solid {RED};border-radius:6px;padding:14px 18px;
-  box-shadow:0 0 0 1px #1c1c1c;transition:.25s}}
-[data-testid="stMetric"]:hover {{box-shadow:0 0 24px {RED}55;transform:translateY(-3px)}}
-[data-testid="stMetricValue"] {{font-family:'Bebas Neue';font-size:2.6rem;color:{WHITE}}}
-.stTabs [data-baseweb="tab"] {{font-family:'Bebas Neue';font-size:1.25rem;letter-spacing:1px;color:{GREY}}}
+.stApp {{background:
+  radial-gradient(circle at 85% -5%,{RED}40 0%,transparent 40%),
+  radial-gradient(circle at 0% 100%,{DARK}55 0%,transparent 45%),
+  linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px) 0 0/44px 44px,
+  linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px) 0 0/44px 44px,
+  {BLACK};color:{TEXT};font-family:Inter,sans-serif}}
+[data-testid="stHeader"] {{background:transparent}}
+[data-testid="stSidebar"] {{background:#1A1D24;border-right:1px solid {RED}55}}
+.stApp p, .stApp label, .stApp span, [data-testid="stCaptionContainer"] {{color:{TEXT}}}
+[data-testid="stCaptionContainer"] p {{color:{GREY}!important}}
+h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{WHITE}!important}}
+.top {{display:grid;grid-template-columns:minmax(70px,1fr) minmax(0,auto) minmax(70px,1fr);align-items:start;gap:12px;margin-top:-1rem}}
+.crest {{justify-self:end;width:clamp(58px,7vw,96px);filter:drop-shadow(0 0 14px {RED}88)}}
+.titles {{text-align:center}}
+.hero {{font-family:'Bebas Neue',Oswald,Impact,sans-serif!important;font-size:clamp(3.4rem,9vw,9rem)!important;line-height:.88;white-space:nowrap;color:{WHITE};margin:0;
+  letter-spacing:4px;text-shadow:0 0 30px rgba(255,255,255,.12)}}
+.hero span {{color:{RED};text-shadow:0 0 26px {RED}cc,0 0 60px {RED}66}}
+.sub {{color:{TEXT};letter-spacing:5px;text-transform:uppercase;font-size:.9rem;margin:.9rem 0 1.4rem;opacity:.85}}
+.banner {{display:block;margin:0 auto 2rem!important;width:100%!important;max-width:1100px;height:clamp(220px,32vw,460px)!important;object-fit:cover!important;object-position:center 40%;border-radius:14px;border:1px solid {RED}88;
+  box-shadow:0 0 0 1px #000,0 18px 50px {RED}33}}
+[data-testid="stMetric"] {{background:{CARD};border-left:4px solid {RED};border-radius:8px;padding:14px 18px;
+  box-shadow:0 0 0 1px #2E323D;transition:.25s}}
+[data-testid="stMetric"]:hover {{box-shadow:0 0 26px {RED}66;transform:translateY(-3px)}}
+[data-testid="stMetricLabel"] p {{color:{TEXT}!important;font-weight:600}}
+[data-testid="stMetricValue"] {{font-family:'Bebas Neue',Impact,sans-serif;font-size:2.8rem;color:{WHITE}}}
+.stTabs [data-baseweb="tab"] {{font-family:'Bebas Neue',Impact,sans-serif;font-size:1.3rem;letter-spacing:1px;color:{GREY}}}
 .stTabs [aria-selected="true"] {{color:{RED}!important}}
 .stTabs [data-baseweb="tab-highlight"] {{background:{RED}}}
-.insight {{border:1px solid {DARK};background:linear-gradient(90deg,{RED}22,transparent);padding:10px 16px;
-  border-radius:6px;margin-top:.5rem;font-size:.92rem}}
+.insight {{border:1px solid {RED}66;background:linear-gradient(90deg,{RED}2e,{CARD}cc);padding:12px 18px;
+  border-radius:8px;margin-top:.5rem;font-size:.95rem;color:{TEXT}}}
 .insight b {{color:{WHITE}}}
+.gallery {{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:2.5rem 0 1rem}}
+.gallery figure {{margin:0;height:clamp(260px,34vw,440px);border-radius:14px;overflow:hidden;border:1px solid {RED}88;
+  background:radial-gradient(circle at 50% 35%,{RED}88 0%,{DARK} 45%,{BLACK} 80%);box-shadow:0 18px 50px {RED}26}}
+.gallery img {{width:100%!important;height:100%!important;max-width:none!important;display:block}}
+.gallery .cover {{object-fit:cover!important;object-position:center 30%}}
+.gallery .contain {{object-fit:contain!important;object-position:center bottom}}
+@media (max-width:640px) {{.gallery {{grid-template-columns:1fr}} .top {{grid-template-columns:1fr;position:relative}}
+  .top > div:first-child {{display:none}} .crest {{position:absolute;top:0;right:0;width:42px}} .titles {{padding-top:52px}}
+  .hero {{font-size:15vw!important}} .sub {{letter-spacing:2px;font-size:.7rem}}}}
 </style>""", unsafe_allow_html=True)
 
 # ─────────────────────────── DATOS ───────────────────────────
@@ -76,10 +111,10 @@ rv["Distancia al campeón"] = rv.groupby("yr").Puntos.transform("max") - rv.Punt
 # ─────────────────────────── HELPERS ───────────────────────────
 def style(fig, h=430):
     fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                      font=dict(family="Inter", color="#cfcfcf"), height=h, margin=dict(l=10, r=10, t=30, b=10),
-                      legend=dict(orientation="h", y=1.12, x=0), hoverlabel=dict(bgcolor="#111", font_color=WHITE))
+                      font=dict(family="Inter", color=TEXT, size=13), height=h, margin=dict(l=10, r=10, t=30, b=10),
+                      legend=dict(orientation="h", y=1.12, x=0), hoverlabel=dict(bgcolor=CARD, font_color=WHITE))
     fig.update_xaxes(showgrid=False, tickvals=list(range(2005, 2026)), ticktext=SEASONS, tickangle=-45)
-    fig.update_yaxes(gridcolor="#1f1f1f", zeroline=False)
+    fig.update_yaxes(gridcolor="#2E323D", zeroline=False)
     return fig
 
 def cholo(fig):  # franja de la era Simeone + marca de llegada
@@ -103,8 +138,12 @@ with st.sidebar:
                           column_config={"Coste": st.column_config.NumberColumn(format="%.1f", min_value=0)})
 
 # ─────────────────────────── HERO + KPIs ───────────────────────────
-st.markdown("<p class='hero'>EL EFECTO <span>CHOLO</span></p>"
-            "<p class='sub'>Atlético de Madrid · 2005/06 → 2025/26 · rendimiento vs. dinero</p>", unsafe_allow_html=True)
+st.markdown(f"""<div class='top'><div></div>
+<div class='titles'><div class='hero'>EL EFECTO<br><span>CHOLO</span></div>
+<div class='sub'>Atlético de Madrid · 2005/06 → 2025/26 · rendimiento vs. dinero</div></div>
+<img class='crest' src='{b64("escudo-atletico.png")}' alt='Escudo del Atlético de Madrid'></div>
+<img class='banner' src='{b64("Simeone-Copas.jpg")}' alt='Simeone y sus títulos con el Atlético'>""",
+            unsafe_allow_html=True)
 
 def stat(s, k):
     n = 38 * len(s)
@@ -155,11 +194,11 @@ with t[2]:
 
 with t[3]:
     eu = pd.DataFrame(EURO, index=SEASONS).T.loc[:, a:b]
-    fig, ax = plt.subplots(figsize=(14, 2.4), facecolor=BLACK)
-    sns.heatmap(eu, cmap=LinearSegmentedColormap.from_list("atm", ["#141414", DARK, RED]), vmin=0, vmax=7, cbar=False,
+    fig, ax = plt.subplots(figsize=(14, 2.4)); fig.patch.set_alpha(0)
+    sns.heatmap(eu, cmap=LinearSegmentedColormap.from_list("atm", ["#2A2E38", DARK, RED]), vmin=0, vmax=7, cbar=False,
                 annot=eu.apply(lambda c: c.map(PHASE)), fmt="", linewidths=2, linecolor=BLACK, ax=ax,
                 annot_kws=dict(color=WHITE, fontsize=8, weight="bold"))
-    ax.tick_params(colors="#cfcfcf", labelsize=8, length=0); plt.xticks(rotation=45); plt.yticks(rotation=0)
+    ax.tick_params(colors=TEXT, labelsize=8, length=0); plt.xticks(rotation=45); plt.yticks(rotation=0)
     st.pyplot(fig, width="stretch")
     insight("Antes de Simeone: una Europa League (2009/10) y presencia intermitente. Con él: 14 temporadas seguidas en "
             "Champions, <b>2 finales</b> (2014, 2016), semis en 2016/17 y 2025/26, y la Europa League 2017/18.")
@@ -215,6 +254,10 @@ with t[6]:
     insight("K-means sobre puntos/partido, % victorias, goles recibidos/partido, diferencia de gol y puesto "
             "(estandarizados). Eje X invertido: cuanto más a la derecha, mejor defensa.")
 
+st.markdown(f"""<div class='gallery'>
+<figure><img class='cover' src='{b64("DiegoSimeone-1.jpg")}' alt='Diego Simeone celebrando'></figure>
+<figure><img class='contain' src='{b64("Foto-Aura-Cholo.png")}' alt='El aura del Cholo'></figure></div>""",
+            unsafe_allow_html=True)
 st.markdown("---")
 st.caption("Fuentes: LaLiga (clasificaciones y límites de coste de plantilla) · UEFA (historial europeo) · "
            "Atlético de Madrid (cuentas anuales). Datos precargados: validar contra las fuentes oficiales antes de publicar.")
