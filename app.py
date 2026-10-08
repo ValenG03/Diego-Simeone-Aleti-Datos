@@ -18,13 +18,15 @@ from sklearn.preprocessing import StandardScaler
 st.set_page_config(page_title="El Efecto Cholo", page_icon="🔴", layout="wide")
 RED, DARK, BLACK, WHITE, GREY = "#E0402F", "#7A2018", "#14161C", "#F5F5F5", "#9BA0AB"
 CARD, TEXT = "#20232C", "#E6E8EC"
-ASSETS = Path(__file__).parent / "assets"
+ROOT = Path(__file__).parent
 
 @st.cache_data
-def b64(name):
-    p = ASSETS / name
-    mime = "png" if p.suffix == ".png" else "jpeg"
-    return f"data:image/{mime};base64,{base64.b64encode(p.read_bytes()).decode()}" if p.exists() else ""
+def b64(name):  # busca la foto en la raíz del repo o en assets/
+    p = next((d / name for d in (ROOT, ROOT / "assets") if (d / name).exists()), None)
+    if p is None:
+        return ""
+    mime = "png" if p.suffix.lower() == ".png" else "jpeg"
+    return f"data:image/{mime};base64,{base64.b64encode(p.read_bytes()).decode()}"
 
 # ─────────────────────────── ESTILO ───────────────────────────
 st.markdown(f"""<style>
@@ -141,7 +143,7 @@ with st.sidebar:
 st.markdown(f"""<div class='top'><div></div>
 <div class='titles'><div class='hero'>EL EFECTO<br><span>CHOLO</span></div>
 <div class='sub'>Atlético de Madrid · 2005/06 → 2025/26 · rendimiento vs. dinero</div></div>
-<img class='crest' src='{b64("escudo-atletico.png")}' alt='Escudo del Atlético de Madrid'></div>
+<img class='crest' src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'></div>
 <img class='banner' src='{b64("Simeone-Copas.jpg")}' alt='Simeone y sus títulos con el Atlético'>""",
             unsafe_allow_html=True)
 
@@ -255,8 +257,8 @@ with t[6]:
             "(estandarizados). Eje X invertido: cuanto más a la derecha, mejor defensa.")
 
 st.markdown(f"""<div class='gallery'>
-<figure><img class='cover' src='{b64("DiegoSimeone-1.jpg")}' alt='Diego Simeone celebrando'></figure>
-<figure><img class='contain' src='{b64("Foto-Aura-Cholo.png")}' alt='El aura del Cholo'></figure></div>""",
+<figure><img class='cover' src='{b64("Diego-Simeone-1.png")}' alt='Diego Simeone celebrando'></figure>
+<figure><img class='contain' src='{b64("Foto-Aura-Cholo.jpg")}' alt='El aura del Cholo'></figure></div>""",
             unsafe_allow_html=True)
 st.markdown("---")
 st.caption("Fuentes: LaLiga (clasificaciones y límites de coste de plantilla) · UEFA (historial europeo) · "
