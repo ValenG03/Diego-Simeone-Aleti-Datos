@@ -63,11 +63,14 @@ h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{
   border-radius:8px;margin-top:.5rem;font-size:.95rem;color:{TEXT}}}
 .insight b {{color:{WHITE}}}
 .gallery {{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:2.5rem 0 1rem}}
-.gallery figure {{margin:0;height:clamp(260px,34vw,440px);border-radius:14px;overflow:hidden;border:1px solid {RED}88;
+.gallery figure {{margin:0;display:flex;align-items:center;justify-content:center;padding:10px;height:clamp(260px,34vw,440px);border-radius:14px;overflow:hidden;border:1px solid {RED}88;
   background:radial-gradient(circle at 50% 35%,{RED}88 0%,{DARK} 45%,{BLACK} 80%);box-shadow:0 18px 50px {RED}26}}
 .gallery img {{width:100%!important;height:100%!important;max-width:none!important;display:block}}
-.gallery .cover {{object-fit:cover!important;object-position:center 30%}}
-.gallery .contain {{object-fit:contain!important;object-position:center bottom}}
+.gallery .cover, .gallery .contain {{object-fit:contain!important;object-position:center center!important}}
+.signature {{text-align:center;margin:2.2rem 0 1rem}}
+.signature img {{width:56px;display:block;margin:0 auto .8rem;filter:drop-shadow(0 0 10px {RED}77)}}
+.signature p {{margin:0;font-size:.9rem;letter-spacing:1px;color:{TEXT}!important}}
+.signature b {{color:{RED}}}
 @media (max-width:640px) {{.gallery {{grid-template-columns:1fr}} .top {{grid-template-columns:1fr;position:relative}}
   .top > div:first-child {{display:none}} .crest {{position:absolute;top:0;right:0;width:42px}} .titles {{padding-top:52px}}
   .hero {{font-size:15vw!important}} .sub {{letter-spacing:2px;font-size:.7rem}}}}
@@ -263,3 +266,5 @@ st.markdown(f"""<div class='gallery'>
 st.markdown("---")
 st.caption("Fuentes: LaLiga (clasificaciones y límites de coste de plantilla) · UEFA (historial europeo) · "
            "Atlético de Madrid (cuentas anuales). Datos precargados: validar contra las fuentes oficiales antes de publicar.")
+st.markdown(f"""<div class='signature'><img src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'>
+<p>Análisis de datos hecho por <b>Valentín Gerold</b> en colaboración con la IA</p></div>""", unsafe_allow_html=True)
