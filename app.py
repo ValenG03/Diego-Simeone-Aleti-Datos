@@ -57,7 +57,7 @@ h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{
 .top::before {{content:"";position:absolute;inset:-10% 15% 0;z-index:0;pointer-events:none;
   background:radial-gradient(ellipse at 50% 55%,{RED}38 0%,transparent 62%);animation:breathe 6s ease-in-out infinite}}
 .titles, .crest {{position:relative;z-index:1}}
-.crest {{justify-self:end;width:clamp(58px,7vw,96px);filter:drop-shadow(0 0 14px {RED}88);
+.crest {{justify-self:end;margin-top:14px;
   animation:drop .9s cubic-bezier(.2,.8,.2,1) both .9s, float 5s ease-in-out infinite 1.8s}}
 .titles {{text-align:center;display:flex;flex-direction:column;align-items:center}}
 .hero {{margin:0;line-height:.86;font-family:'Bebas Neue',Oswald,Impact,sans-serif!important;white-space:nowrap}}
@@ -114,17 +114,19 @@ h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{
 .gallery figure {{margin:0;padding:16px;box-sizing:border-box;border-radius:14px;border:1px solid {RED}88;
   background:radial-gradient(circle at 50% 35%,{RED}88 0%,{DARK} 45%,{BLACK} 80%);box-shadow:0 18px 50px {RED}26}}
 .gallery img {{display:block;width:100%!important;height:auto!important;max-width:none!important;border-radius:6px}}
-.sources {{margin:1rem 0 0;padding:20px 26px;border:1px solid {RED}77;border-radius:14px;
+.sources {{text-align:center;margin:1rem 0 0;padding:22px 26px;border:1px solid {RED}77;border-radius:14px;
   background:linear-gradient(135deg,{CARD} 0%,#1A1D24 100%);box-shadow:inset 0 0 0 1px #2E323D,0 12px 34px #00000055}}
 .sources h4 {{margin:0 0 .5rem;font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:.2em;font-size:1.35rem;color:{RED}!important}}
 .sources p {{margin:0;font-size:1.06rem;line-height:1.75;color:{TEXT}!important}}
 .sources a {{color:{WHITE}!important;text-decoration:none;border-bottom:1px solid {RED};padding-bottom:1px;transition:.2s}}
 .sources a:hover {{color:{RED}!important;border-bottom-color:{WHITE};text-shadow:0 0 12px {RED}88}}
 .sources em {{display:block;margin-top:.5rem;font-style:normal;font-size:.92rem;color:{GREY}}}
-.signature {{text-align:center;margin:3rem 0 1.5rem}}
-.crest-neon {{position:relative;width:64px;margin:0 auto 1.8rem}}
+.signature {{text-align:center;margin:3rem 0 2.5rem}}
+.crest-neon {{position:relative;width:64px;margin:0 auto 4.2rem}}
 .crest-neon::before {{content:"";position:absolute;inset:-14px;border-radius:50%;z-index:0;filter:blur(16px);opacity:.75;
   background:conic-gradient({RED},{WHITE},#2F5BD8,{RED});animation:spin 6s linear infinite}}
+.top-neon {{margin:0;width:clamp(58px,7vw,96px)}}
+.top-neon img {{width:100%!important}}
 .crest-neon img {{position:relative;z-index:1;width:64px;display:block;animation:neon 3s ease-in-out infinite}}
 @keyframes spin {{to {{transform:rotate(360deg)}}}}
 @keyframes neon {{0%,100% {{filter:drop-shadow(0 0 4px {RED}) drop-shadow(0 0 12px {RED}aa)}}
@@ -134,7 +136,7 @@ h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{
 .signature b {{color:{RED}}}
 @media (max-width:640px) {{.gallery {{flex-direction:column}} .gallery figure {{width:100%}}
   .top {{grid-template-columns:1fr}} .top > div:first-child {{display:none}}
-  .crest {{position:absolute;top:0;right:0;width:42px}} .titles {{padding-top:52px}}
+  .crest {{position:absolute;top:0;right:4px;margin:0}} .top-neon {{width:42px}} .titles {{padding-top:52px}}
   .hero .l1 {{font-size:9vw!important;letter-spacing:.22em;margin-right:-.22em}} .hero .l2 {{font-size:22vw!important}}
   .sub {{flex-direction:column;gap:.35rem;letter-spacing:.16em;font-size:.7rem}} .sub i {{display:none}} .sources {{padding:16px 18px}}}}
 @media (prefers-reduced-motion:reduce) {{*, *::before, *::after {{animation:none!important}} .sub span, .sub i {{opacity:1}}}}
@@ -211,7 +213,7 @@ st.markdown(f"""<div class='top'><div></div>
 <div class='titles'><h1 class='hero'><span class='l1'>EL EFECTO</span><span class='l2' data-text='CHOLO'>CHOLO</span></h1>
 <div class='rule'></div>
 <div class='sub'><span>Atlético de Madrid</span><i></i><span>2005/06 → 2025/26</span><i></i><span>rendimiento vs. dinero</span></div></div>
-<img class='crest' src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'></div>
+<div class='crest crest-neon top-neon'><img src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'></div></div>
 <img class='banner' src='{b64("Simeone-Copas.jpg")}' alt='Simeone y sus títulos con el Atlético'>""",
             unsafe_allow_html=True)
 
