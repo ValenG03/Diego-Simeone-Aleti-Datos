@@ -120,6 +120,7 @@ h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{
 .sources p {{margin:0;font-size:1.06rem;line-height:1.75;color:{TEXT}!important}}
 .sources a {{color:{WHITE}!important;text-decoration:none;border-bottom:1px solid {RED};padding-bottom:1px;transition:.2s}}
 .sources a:hover {{color:{RED}!important;border-bottom-color:{WHITE};text-shadow:0 0 12px {RED}88}}
+.note {{color:{WHITE}!important;font-size:1.02rem;margin:.6rem 0 1.2rem}}
 .sources em {{display:block;margin-top:.5rem;font-style:normal;font-size:.92rem;color:{GREY}}}
 .signature {{text-align:center;margin:3rem 0 2.5rem}}
 .crest-neon {{position:relative;width:64px;margin:0 auto 4.2rem}}
@@ -229,7 +230,7 @@ for col, (k, lab, fmt, unit, inv) in zip(c, [("ppg", "Puntos por partido", "{:.2
     x0, x1 = stat(pre, k), stat(cho, k)
     col.metric(lab, fmt.format(x1), (f"{x1 - x0:+.1f}" if unit else f"{x1 - x0:+.2f}") + f"{unit} vs. antes ({fmt.format(x0)})",
                delta_color="inverse" if inv else "normal")
-st.caption("Era Simeone (2012/13–2025/26) frente a Antes de Simeone (2005/06–2010/11). 2011/12 queda como transición.")
+st.markdown("<p class='note'>Era Simeone (2012/13–2025/26) frente a Antes de Simeone (2005/06–2010/11). 2011/12 queda como transición.</p>", unsafe_allow_html=True)
 
 # ─────────────────────────── TABS ───────────────────────────
 t = st.tabs(["⚡ Puntos", "📊 Posiciones", "🛡️ Defensa", "🌍 Europa", "💶 Dinero", "⚔️ Rivales", "🧠 Clustering"])
@@ -337,6 +338,6 @@ L = {"cla": "https://www.laliga.com/laliga-easports/clasificacion",
 a_ = lambda k, t: f"<a href='{L[k]}' target='_blank' rel='noopener'>{t}</a>"
 st.markdown(f"""<div class='sources'><h4>Fuentes</h4>
 <p>{a_("cla", "LaLiga")} (clasificaciones y {a_("lcpd", "límites de coste de plantilla")}) · {a_("uefa", "UEFA")} (historial europeo) ·
-{a_("atm", "Atlético de Madrid")} (cuentas anuales).<em>Datos precargados: validar contra las fuentes oficiales antes de publicar.</em></p></div>
+{a_("atm", "Atlético de Madrid")} (cuentas anuales).</p></div>
 <div class='signature'><div class='crest-neon'><img src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'></div>
 <p>Análisis de datos hecho por <b>Valentín Gerold</b> en colaboración con la IA</p></div>""", unsafe_allow_html=True)
