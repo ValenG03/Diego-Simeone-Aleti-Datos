@@ -4,6 +4,8 @@ Rendimiento deportivo vs. recursos económicos. Stack: Streamlit · Pandas · Pl
 import base64
 from pathlib import Path
 
+from PIL import Image
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -28,9 +30,17 @@ def b64(name):  # busca la foto en la raíz del repo o en assets/
     mime = "png" if p.suffix.lower() == ".png" else "jpeg"
     return f"data:image/{mime};base64,{base64.b64encode(p.read_bytes()).decode()}"
 
+@st.cache_data
+def ratio(name):  # ancho / alto de la foto, para que el marco la abrace con márgenes iguales
+    p = next((d / name for d in (ROOT, ROOT / "assets") if (d / name).exists()), None)
+    if p is None:
+        return 1.0
+    w, h = Image.open(p).size
+    return round(w / h, 4)
+
 # ─────────────────────────── ESTILO ───────────────────────────
 st.markdown(f"""<style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap');
 .stApp {{background:
   radial-gradient(circle at 85% -5%,{RED}40 0%,transparent 40%),
   radial-gradient(circle at 0% 100%,{DARK}55 0%,transparent 45%),
@@ -42,15 +52,52 @@ st.markdown(f"""<style>
 .stApp p, .stApp label, .stApp span, [data-testid="stCaptionContainer"] {{color:{TEXT}}}
 [data-testid="stCaptionContainer"] p {{color:{GREY}!important}}
 h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{WHITE}!important}}
-.top {{display:grid;grid-template-columns:minmax(70px,1fr) minmax(0,auto) minmax(70px,1fr);align-items:start;gap:12px;margin-top:-1rem}}
-.crest {{justify-self:end;width:clamp(58px,7vw,96px);filter:drop-shadow(0 0 14px {RED}88)}}
-.titles {{text-align:center}}
-.hero {{font-family:'Bebas Neue',Oswald,Impact,sans-serif!important;font-size:clamp(3.4rem,9vw,9rem)!important;line-height:.88;white-space:nowrap;color:{WHITE};margin:0;
-  letter-spacing:4px;text-shadow:0 0 30px rgba(255,255,255,.12)}}
-.hero span {{color:{RED};text-shadow:0 0 26px {RED}cc,0 0 60px {RED}66}}
-.sub {{color:{TEXT};letter-spacing:5px;text-transform:uppercase;font-size:.9rem;margin:.9rem 0 1.4rem;opacity:.85}}
+.top {{position:relative;display:grid;grid-template-columns:minmax(70px,1fr) minmax(0,auto) minmax(70px,1fr);
+  align-items:start;gap:12px;margin-top:-1rem;padding:1.4rem 0 .6rem}}
+.top::before {{content:"";position:absolute;inset:-10% 15% 0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 55%,{RED}38 0%,transparent 62%);animation:breathe 6s ease-in-out infinite}}
+.titles, .crest {{position:relative;z-index:1}}
+.crest {{justify-self:end;width:clamp(58px,7vw,96px);filter:drop-shadow(0 0 14px {RED}88);
+  animation:drop .9s cubic-bezier(.2,.8,.2,1) both .9s, float 5s ease-in-out infinite 1.8s}}
+.titles {{text-align:center;display:flex;flex-direction:column;align-items:center}}
+.hero {{margin:0;line-height:.86;font-family:'Bebas Neue',Oswald,Impact,sans-serif!important;white-space:nowrap}}
+.hero .l1 {{display:block;font-size:clamp(2.4rem,6.2vw,6.2rem)!important;letter-spacing:.32em;margin-right:-.32em;
+  background:linear-gradient(100deg,{WHITE} 0%,{WHITE} 40%,#ffd9d4 48%,{RED} 50%,#ffd9d4 52%,{WHITE} 60%,{WHITE} 100%);
+  background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;
+  animation:rise .9s cubic-bezier(.2,.8,.2,1) both .1s, sheen 5.5s linear infinite 1.2s}}
+.hero .l2 {{position:relative;display:inline-block;font-size:clamp(4.6rem,15vw,13.5rem)!important;letter-spacing:.06em;
+  color:{RED}!important;text-shadow:0 0 8px {RED},0 0 28px {RED}cc,0 0 70px {RED}77;
+  animation:rise 1s cubic-bezier(.2,.8,.2,1) both .35s, flicker 2.2s linear both 1.1s, pulse 4s ease-in-out infinite 3.4s}}
+.hero .l2::before, .hero .l2::after {{content:attr(data-text);position:absolute;inset:0;pointer-events:none;opacity:0}}
+.hero .l2::before {{color:{WHITE};animation:glitch 7s steps(1) infinite 4s}}
+.hero .l2::after {{color:#2F5BD8;animation:glitch 7s steps(1) infinite 4.08s reverse}}
+.rule {{position:relative;height:2px;width:clamp(120px,22vw,320px);margin:1.1rem auto .9rem;overflow:hidden;
+  background:linear-gradient(90deg,transparent,{RED},transparent);transform-origin:center;animation:grow .9s ease-out both 1s}}
+.rule::after {{content:"";position:absolute;top:-2px;left:-30%;width:30%;height:6px;
+  background:radial-gradient(ellipse,{WHITE} 0%,transparent 70%);animation:scan 2.8s ease-in-out infinite 2s}}
+.sub {{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.4rem 1rem;margin:0 0 1.8rem;
+  font-family:'Space Grotesk',Inter,sans-serif!important;font-weight:500;text-transform:uppercase;
+  letter-spacing:.22em;font-size:clamp(.72rem,1vw,.95rem);color:{TEXT}}}
+.sub span {{white-space:nowrap}}
+.sub span {{opacity:0;animation:rise .7s ease-out forwards}}
+.sub span:nth-of-type(1) {{animation-delay:1.25s}} .sub span:nth-of-type(2) {{animation-delay:1.4s;color:{WHITE};font-weight:700}}
+.sub span:nth-of-type(3) {{animation-delay:1.55s}}
+.sub i {{width:6px;height:6px;background:{RED};transform:rotate(45deg);box-shadow:0 0 10px {RED};opacity:0;animation:rise .5s ease-out forwards 1.35s}}
+@keyframes rise {{from {{opacity:0;transform:translateY(34px);filter:blur(10px)}} to {{opacity:1;transform:none;filter:blur(0)}}}}
+@keyframes sheen {{from {{background-position:120% 0}} to {{background-position:-130% 0}}}}
+@keyframes flicker {{0%,18%,22%,25%,53%,57%,100% {{opacity:1}} 20%,24%,55% {{opacity:.35}}}}
+@keyframes pulse {{0%,100% {{text-shadow:0 0 8px {RED},0 0 28px {RED}cc,0 0 70px {RED}77}}
+  50% {{text-shadow:0 0 12px {RED},0 0 42px {RED},0 0 110px {RED}99}}}}
+@keyframes glitch {{0%,94%,100% {{opacity:0;transform:none}} 95% {{opacity:.55;transform:translate(-4px,1px);clip-path:inset(18% 0 52% 0)}}
+  97% {{opacity:.55;transform:translate(4px,-1px);clip-path:inset(60% 0 12% 0)}}}}
+@keyframes grow {{from {{transform:scaleX(0)}} to {{transform:scaleX(1)}}}}
+@keyframes scan {{0% {{left:-30%}} 100% {{left:100%}}}}
+@keyframes breathe {{0%,100% {{opacity:.75}} 50% {{opacity:1}}}}
+@keyframes drop {{from {{opacity:0;transform:translateY(-30px) rotate(-8deg)}} to {{opacity:1;transform:none}}}}
+@keyframes float {{0%,100% {{transform:translateY(0)}} 50% {{transform:translateY(-6px)}}}}
+@keyframes fadeup {{from {{opacity:0;transform:translateY(24px)}} to {{opacity:1;transform:none}}}}
 .banner {{display:block;margin:0 auto 2rem!important;width:100%!important;max-width:1100px;height:clamp(220px,32vw,460px)!important;object-fit:cover!important;object-position:center 40%;border-radius:14px;border:1px solid {RED}88;
-  box-shadow:0 0 0 1px #000,0 18px 50px {RED}33}}
+  box-shadow:0 0 0 1px #000,0 18px 50px {RED}33;animation:fadeup 1s ease-out both 1.7s}}
 [data-testid="stMetric"] {{background:{CARD};border-left:4px solid {RED};border-radius:8px;padding:14px 18px;
   box-shadow:0 0 0 1px #2E323D;transition:.25s}}
 [data-testid="stMetric"]:hover {{box-shadow:0 0 26px {RED}66;transform:translateY(-3px)}}
@@ -59,21 +106,38 @@ h1,h2,h3 {{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:2px;color:{
 .stTabs [data-baseweb="tab"] {{font-family:'Bebas Neue',Impact,sans-serif;font-size:1.3rem;letter-spacing:1px;color:{GREY}}}
 .stTabs [aria-selected="true"] {{color:{RED}!important}}
 .stTabs [data-baseweb="tab-highlight"] {{background:{RED}}}
+.stTabs [role="tablist"] {{justify-content:center!important;gap:.6rem;flex-wrap:wrap}}
 .insight {{border:1px solid {RED}66;background:linear-gradient(90deg,{RED}2e,{CARD}cc);padding:12px 18px;
   border-radius:8px;margin-top:.5rem;font-size:.95rem;color:{TEXT}}}
 .insight b {{color:{WHITE}}}
-.gallery {{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:2.5rem 0 1rem}}
-.gallery figure {{margin:0;display:flex;align-items:center;justify-content:center;padding:10px;height:clamp(260px,34vw,440px);border-radius:14px;overflow:hidden;border:1px solid {RED}88;
+.gallery {{display:flex;gap:20px;align-items:flex-start;margin:2.5rem 0 1.5rem}}
+.gallery figure {{margin:0;padding:16px;box-sizing:border-box;border-radius:14px;border:1px solid {RED}88;
   background:radial-gradient(circle at 50% 35%,{RED}88 0%,{DARK} 45%,{BLACK} 80%);box-shadow:0 18px 50px {RED}26}}
-.gallery img {{width:100%!important;height:100%!important;max-width:none!important;display:block}}
-.gallery .cover, .gallery .contain {{object-fit:contain!important;object-position:center center!important}}
-.signature {{text-align:center;margin:2.2rem 0 1rem}}
-.signature img {{width:56px;display:block;margin:0 auto .8rem;filter:drop-shadow(0 0 10px {RED}77)}}
-.signature p {{margin:0;font-size:.9rem;letter-spacing:1px;color:{TEXT}!important}}
+.gallery img {{display:block;width:100%!important;height:auto!important;max-width:none!important;border-radius:6px}}
+.sources {{margin:1rem 0 0;padding:20px 26px;border:1px solid {RED}77;border-radius:14px;
+  background:linear-gradient(135deg,{CARD} 0%,#1A1D24 100%);box-shadow:inset 0 0 0 1px #2E323D,0 12px 34px #00000055}}
+.sources h4 {{margin:0 0 .5rem;font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:.2em;font-size:1.35rem;color:{RED}!important}}
+.sources p {{margin:0;font-size:1.06rem;line-height:1.75;color:{TEXT}!important}}
+.sources a {{color:{WHITE}!important;text-decoration:none;border-bottom:1px solid {RED};padding-bottom:1px;transition:.2s}}
+.sources a:hover {{color:{RED}!important;border-bottom-color:{WHITE};text-shadow:0 0 12px {RED}88}}
+.sources em {{display:block;margin-top:.5rem;font-style:normal;font-size:.92rem;color:{GREY}}}
+.signature {{text-align:center;margin:3rem 0 1.5rem}}
+.crest-neon {{position:relative;width:64px;margin:0 auto 1.8rem}}
+.crest-neon::before {{content:"";position:absolute;inset:-14px;border-radius:50%;z-index:0;filter:blur(16px);opacity:.75;
+  background:conic-gradient({RED},{WHITE},#2F5BD8,{RED});animation:spin 6s linear infinite}}
+.crest-neon img {{position:relative;z-index:1;width:64px;display:block;animation:neon 3s ease-in-out infinite}}
+@keyframes spin {{to {{transform:rotate(360deg)}}}}
+@keyframes neon {{0%,100% {{filter:drop-shadow(0 0 4px {RED}) drop-shadow(0 0 12px {RED}aa)}}
+  33% {{filter:drop-shadow(0 0 4px {WHITE}) drop-shadow(0 0 12px #ffffffaa)}}
+  66% {{filter:drop-shadow(0 0 4px #2F5BD8) drop-shadow(0 0 12px #2F5BD8aa)}}}}
+.signature p {{margin:0;font-size:.95rem;letter-spacing:1px;color:{TEXT}!important}}
 .signature b {{color:{RED}}}
-@media (max-width:640px) {{.gallery {{grid-template-columns:1fr}} .top {{grid-template-columns:1fr;position:relative}}
-  .top > div:first-child {{display:none}} .crest {{position:absolute;top:0;right:0;width:42px}} .titles {{padding-top:52px}}
-  .hero {{font-size:15vw!important}} .sub {{letter-spacing:2px;font-size:.7rem}}}}
+@media (max-width:640px) {{.gallery {{flex-direction:column}} .gallery figure {{width:100%}}
+  .top {{grid-template-columns:1fr}} .top > div:first-child {{display:none}}
+  .crest {{position:absolute;top:0;right:0;width:42px}} .titles {{padding-top:52px}}
+  .hero .l1 {{font-size:9vw!important;letter-spacing:.22em;margin-right:-.22em}} .hero .l2 {{font-size:22vw!important}}
+  .sub {{flex-direction:column;gap:.35rem;letter-spacing:.16em;font-size:.7rem}} .sub i {{display:none}} .sources {{padding:16px 18px}}}}
+@media (prefers-reduced-motion:reduce) {{*, *::before, *::after {{animation:none!important}} .sub span, .sub i {{opacity:1}}}}
 </style>""", unsafe_allow_html=True)
 
 # ─────────────────────────── DATOS ───────────────────────────
@@ -144,8 +208,9 @@ with st.sidebar:
 
 # ─────────────────────────── HERO + KPIs ───────────────────────────
 st.markdown(f"""<div class='top'><div></div>
-<div class='titles'><div class='hero'>EL EFECTO<br><span>CHOLO</span></div>
-<div class='sub'>Atlético de Madrid · 2005/06 → 2025/26 · rendimiento vs. dinero</div></div>
+<div class='titles'><h1 class='hero'><span class='l1'>EL EFECTO</span><span class='l2' data-text='CHOLO'>CHOLO</span></h1>
+<div class='rule'></div>
+<div class='sub'><span>Atlético de Madrid</span><i></i><span>2005/06 → 2025/26</span><i></i><span>rendimiento vs. dinero</span></div></div>
 <img class='crest' src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'></div>
 <img class='banner' src='{b64("Simeone-Copas.jpg")}' alt='Simeone y sus títulos con el Atlético'>""",
             unsafe_allow_html=True)
@@ -260,11 +325,16 @@ with t[6]:
             "(estandarizados). Eje X invertido: cuanto más a la derecha, mejor defensa.")
 
 st.markdown(f"""<div class='gallery'>
-<figure><img class='cover' src='{b64("Diego-Simeone-1.png")}' alt='Diego Simeone celebrando'></figure>
-<figure><img class='contain' src='{b64("Foto-Aura-Cholo.jpg")}' alt='El aura del Cholo'></figure></div>""",
+<figure style='flex:{ratio("Diego-Simeone-1.png")} 1 34px'><img src='{b64("Diego-Simeone-1.png")}' alt='Diego Simeone celebrando'></figure>
+<figure style='flex:{ratio("Foto-Aura-Cholo.jpg")} 1 34px'><img src='{b64("Foto-Aura-Cholo.jpg")}' alt='El aura del Cholo'></figure></div>""",
             unsafe_allow_html=True)
-st.markdown("---")
-st.caption("Fuentes: LaLiga (clasificaciones y límites de coste de plantilla) · UEFA (historial europeo) · "
-           "Atlético de Madrid (cuentas anuales). Datos precargados: validar contra las fuentes oficiales antes de publicar.")
-st.markdown(f"""<div class='signature'><img src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'>
+L = {"cla": "https://www.laliga.com/laliga-easports/clasificacion",
+     "lcpd": "https://www.laliga.com/transparencia/gestion-economica/limite-coste-plantilla",
+     "uefa": "https://www.uefa.com/uefachampionsleague/news/0250-0c50fb933c1b-ee0d8fabd000-1000--club-facts-atletico",
+     "atm": "https://www.atleticodemadrid.com/atm/informacion-economica-financiera"}
+a_ = lambda k, t: f"<a href='{L[k]}' target='_blank' rel='noopener'>{t}</a>"
+st.markdown(f"""<div class='sources'><h4>Fuentes</h4>
+<p>{a_("cla", "LaLiga")} (clasificaciones y {a_("lcpd", "límites de coste de plantilla")}) · {a_("uefa", "UEFA")} (historial europeo) ·
+{a_("atm", "Atlético de Madrid")} (cuentas anuales).<em>Datos precargados: validar contra las fuentes oficiales antes de publicar.</em></p></div>
+<div class='signature'><div class='crest-neon'><img src='{b64("Atletico_Madrid.png")}' alt='Escudo del Atlético de Madrid'></div>
 <p>Análisis de datos hecho por <b>Valentín Gerold</b> en colaboración con la IA</p></div>""", unsafe_allow_html=True)
